@@ -1,0 +1,10 @@
+namespace Application.Dtos
+{
+    public record UsuarioUpdateDto(
+        string Nome,
+        string Email,
+        DateTime DataNascimento,
+        string? Telefone,
+        bool Ativo
+    );
+}
