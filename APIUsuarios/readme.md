@@ -1,0 +1,4 @@
+- Criaçao da AppDbContext
+- Primeira Migration
+- Organização do codigo na Program.cs
+- Interface e Implementação da Repository
