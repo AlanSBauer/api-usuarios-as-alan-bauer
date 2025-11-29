@@ -1,14 +1,84 @@
-using System.Reflection.Metadata;
-using System.Runtime.Intrinsics.Arm;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure.Persistence;
 using FluentValidation;
+using Infrastructure.Persistence;
+using Infrastructure.Repositories;
+using Application.Dtos;
+using Application.Interfaces;
+using Application.Services;
+using Application.Validators;
+using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=app.db"));
+builder.Services.AddScoped<IUSuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddValidatorsFromAssemblyContaining<UsuarioCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UsuarioUpdateDtoValidator>();
 
 var app = builder.Build();
+
+// Get para pegar todos os usuarios
+app.MapGet("/usuarios", async (IUsuarioService service, CancellationToken ct) => {
+    var usuarios = await service.ListarAsync(ct);
+    return Results.Ok(usuarios);
+});
+
+// Get para pegar usuario por id
+app.MapGet("/usuarios/{id:int}", async (int id, IUsuarioService service, CancellationToken ct) =>
+{
+    var usuario = await service.ObterAsync(id, ct);
+    return usuario != null ? Results.Ok() : Results.NotFound();
+    });
+
+// Post
+app.MapPost("/usuarios", async (UsuarioCreateDto usuarioDto, IUsuarioService service, IValidator<UsuarioCreateDto> Validator, CancellationToken ct) =>
+{
+    var validationResult = await Validator.ValidateAsync(usuarioDto, ct);
+
+    if(!validationResult.IsValid)
+    {
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    var usuario = await service.CriarAsync(usuarioDto, ct);
+
+    return Results.Created($"/usuarios/{usuario.Id}", usuario);
+});
+
+// Put
+app.MapPut("/usuarios/{id}", async (int id, UsuarioUpdateDto usuarioDto, IUsuarioService service, IValidator<UsuarioUpdateDto> validator, CancellationToken ct) =>
+{
+    var validationResult = await validator.ValidateAsync(usuarioDto, ct);
+
+    if (!validationResult.IsValid)
+    {
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    var usuarioAtualizado = await service.AtualizarAsync(id, usuarioDto, ct);
+
+    if(usuarioAtualizado == null)
+        return Results.NotFound();
+    
+    return Results.Ok(usuarioAtualizado);
+});
+
+// Delete
+app.MapDelete("/usuarios/{id:int}", async(int id, IUsuarioService service, CancellationToken ct) =>
+{
+    var remover = await service.RemoverAsync(id, ct);
+
+    return remover ? Results.NoContent() : Results.NotFound();
+});
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 

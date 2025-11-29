@@ -2,3 +2,6 @@
 - Primeira Migration
 - Organização do codigo na Program.cs
 - Interface e Implementação da Repository
+- Service, Dtos e Repository Ok
+- Validaçoes com FluentValidation
+- Finalizar a Program.cs
