@@ -6,7 +6,6 @@ using Application.Dtos;
 using Application.Interfaces;
 using Application.Services;
 using Application.Validators;
-using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=app.db"));
 builder.Services.AddScoped<IUSuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddValidatorsFromAssemblyContaining<UsuarioCreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UsuarioCreateDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UsuarioUpdateDtoValidator>();
 
 var app = builder.Build();
@@ -30,13 +29,13 @@ app.MapGet("/usuarios", async (IUsuarioService service, CancellationToken ct) =>
 app.MapGet("/usuarios/{id:int}", async (int id, IUsuarioService service, CancellationToken ct) =>
 {
     var usuario = await service.ObterAsync(id, ct);
-    return usuario != null ? Results.Ok() : Results.NotFound();
-    });
+    return usuario != null ? Results.Ok(usuario) : Results.NotFound();
+});
 
 // Post
-app.MapPost("/usuarios", async (UsuarioCreateDto usuarioDto, IUsuarioService service, IValidator<UsuarioCreateDto> Validator, CancellationToken ct) =>
+app.MapPost("/usuarios", async (UsuarioCreateDto usuarioDto, IUsuarioService service, IValidator<UsuarioCreateDto> validator, CancellationToken ct) =>
 {
-    var validationResult = await Validator.ValidateAsync(usuarioDto, ct);
+    var validationResult = await validator.ValidateAsync(usuarioDto, ct);
 
     if(!validationResult.IsValid)
     {
@@ -51,18 +50,19 @@ app.MapPost("/usuarios", async (UsuarioCreateDto usuarioDto, IUsuarioService ser
 // Put
 app.MapPut("/usuarios/{id}", async (int id, UsuarioUpdateDto usuarioDto, IUsuarioService service, IValidator<UsuarioUpdateDto> validator, CancellationToken ct) =>
 {
-    var validationResult = await validator.ValidateAsync(usuarioDto, ct);
+    var context = new ValidationContext<UsuarioUpdateDto>(usuarioDto);
+    context.RootContextData["Id"] = id;
+
+    var validationResult = await validator.ValidateAsync(context);
 
     if (!validationResult.IsValid)
-    {
         return Results.ValidationProblem(validationResult.ToDictionary());
-    }
 
     var usuarioAtualizado = await service.AtualizarAsync(id, usuarioDto, ct);
 
-    if(usuarioAtualizado == null)
+    if (usuarioAtualizado == null)
         return Results.NotFound();
-    
+
     return Results.Ok(usuarioAtualizado);
 });
 

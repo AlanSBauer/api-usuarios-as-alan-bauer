@@ -54,20 +54,10 @@ namespace Application.Services
 
         public async Task<UsuarioReadDto> CriarAsync(UsuarioCreateDto dto, CancellationToken ct)
         {
-            var email = dto.Email.ToLower();
-
-            if(await _repository.EmailExistsAsync(dto.Email, ct))
-                throw new Exception("Email já cadastrado.");
-
-            var idade = DateTime.Today.Year - dto.DataNascimento.Year;
-            if(dto.DataNascimento.Date > DateTime.Today.AddYears(-idade)) idade--;
-            if(idade < 18) 
-                throw new Exception("Usuário deve ter pelo menos 18 anos.");
-            
             var usuario = new Usuario
             {
                 Nome = dto.Nome,
-                Email = email,
+                Email = dto.Email.ToLower(),
                 Senha = dto.Senha,
                 DataNascimento = dto.DataNascimento,
                 Telefone = dto.Telefone,
@@ -93,11 +83,6 @@ namespace Application.Services
         {
             var email = dto.Email.ToLower();
             var usuario = await _repository.GetByIdAsync(id, ct);
-
-            var idade = DateTime.Today.Year - dto.DataNascimento.Year;
-            if(dto.DataNascimento.Date > DateTime.Today.AddYears(-idade)) idade--;
-            if(idade < 18) 
-                throw new Exception("Usuário deve ter pelo menos 18 anos.");
 
             if(usuario is null)
                 throw new Exception("Usuário não encontrado.");

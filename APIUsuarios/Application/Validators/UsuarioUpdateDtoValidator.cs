@@ -1,47 +1,44 @@
-using System.Data;
+using FluentValidation;
 using Application.Dtos;
 using Application.Interfaces;
-using FluentValidation;
 
-namespace Application.Validators
+public class UsuarioUpdateDtoValidator : AbstractValidator<UsuarioUpdateDto>
 {
-    public class UsuarioUpdateDtoValidator : AbstractValidator<UsuarioUpdateDto>
+    public UsuarioUpdateDtoValidator(IUSuarioRepository repository)
     {
-        public UsuarioUpdateDtoValidator(IUSuarioRepository repository)
-        {
-            RuleFor(u => u.Nome)
-                .NotEmpty()
-                .WithMessage("Nome é obrigatório.")
-                .MinimumLength(3)
-                .WithMessage("O nome deve ter no minimo 3 caracteres.")
-                .MaximumLength(100)
-                .WithMessage("O nome deve ter no máximo 100 caracteres.");
+        RuleFor(u => u.Nome)
+            .NotEmpty()
+            .MinimumLength(3)
+            .MaximumLength(100);
 
-            RuleFor(u => u.Email)
-                .NotEmpty()
-                .EmailAddress();
+        RuleFor(u => u.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MustAsync(async (dto, email, context, ct) =>
+            {
+                var idRota = (int)context.RootContextData["Id"];
 
-            RuleFor(u => u.DataNascimento)
-                .NotEmpty()
-                .WithMessage("A data de nascimento é obrigatória.");
+                var existente = await repository.GetByEmailAsync(email, ct);
 
-            RuleFor(u => u.Telefone)
-                .Matches(@"^(\+55\s?)?(\(?\d{2}\)?\s?)?9?\d{4}-?\s?\d{4}$")
-                .When(u => !string.IsNullOrWhiteSpace(u.Telefone));
+                if (existente == null) return true;
 
-            RuleFor(u => u)
-                .CustomAsync(async (dto, context, ct) =>
-                {
-                    var id = (int)context.RootContextData["Id"];
+                return existente.Id == idRota;
+            })
+            .WithMessage("Email já cadastrado.");
 
-                    var user = await repository.GetByEmailAsync(dto.Email, ct);
+        RuleFor(u => u.DataNascimento)
+            .NotEmpty()
+            .Must(data =>
+            {
+                int idade = DateTime.Today.Year - data.Year;
+                if (data.Date > DateTime.Today.AddYears(-idade))
+                    idade--;
+                return idade >= 18;
+            })
+            .WithMessage("Usuário deve ter pelo menos 18 anos.");
 
-                    if(user != null && user.Id != id)
-                    {
-                        context.AddFailure("Email", "Email já está sendo utilizado por outro usuário.");
-                    }
-                });
-        }
-    
+        RuleFor(u => u.Telefone)
+            .Matches(@"^(\+55\s?)?(\(?\d{2}\)?\s?)?9?\d{4}-?\s?\d{4}$")
+            .When(u => !string.IsNullOrWhiteSpace(u.Telefone));
     }
 }
