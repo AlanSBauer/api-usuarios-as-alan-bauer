@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "3c9de4e2-1a12-4bc0-8b45-usuarios-api",
+		"name": "API Usuarios - Alan Bauer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Criar usuário (válido)",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Alan Bauer\",\n    \"email\": \"alan@example.com\",\n    \"senha\": \"123456\",\n    \"dataNascimento\": \"2000-05-10\",\n    \"telefone\": \"11999999999\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/usuarios",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios"]
+				}
+			}
+		},
+		{
+			"name": "Criar usuário (email duplicado)",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"Outro\",\n    \"email\": \"alan@example.com\",\n    \"senha\": \"123456\",\n    \"dataNascimento\": \"2000-05-10\",\n    \"telefone\": \"11999999999\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/usuarios",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios"]
+				}
+			}
+		},
+		{
+			"name": "Criar usuário (dados inválidos)",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"nome\": \"A\",\n    \"email\": \"email-invalido\",\n    \"senha\": \"1\",\n    \"dataNascimento\": \"2020-01-01\",\n    \"telefone\": \"999\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/usuarios",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios"]
+				}
+			}
+		},
+		{
+			"name": "Listar usuários",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "{{baseUrl}}/usuarios",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios"]
+				}
+			}
+		},
+		{
+			"name": "Buscar usuário por ID",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "{{baseUrl}}/usuarios/1",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios", "1"]
+				}
+			}
+		},
+		{
+			"name": "Atualizar usuário",
+			"request": {
+				"method": "PUT",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nome\": \"Alan Atualizado\",\n  \"email\": \"alan@example.com\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"telefone\": \"11988887777\",\n  \"ativo\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/usuarios/1",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios", "1"]
+				}
+			}
+		},
+		{
+			"name": "Remover usuário",
+			"request": {
+				"method": "DELETE",
+				"url": {
+					"raw": "{{baseUrl}}/usuarios/1",
+					"host": ["{{baseUrl}}"],
+					"path": ["usuarios", "1"]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5196"
+		}
+	]
+}

@@ -29,7 +29,7 @@ app.MapGet("/usuarios", async (IUsuarioService service, CancellationToken ct) =>
 app.MapGet("/usuarios/{id:int}", async (int id, IUsuarioService service, CancellationToken ct) =>
 {
     var usuario = await service.ObterAsync(id, ct);
-    return usuario != null ? Results.Ok(usuario) : Results.NotFound();
+    return usuario != null ? Results.Ok(usuario) : Results.NotFound(new { message = $"Usuário com id {id} não foi encontrado." });
 });
 
 // Post
@@ -61,7 +61,7 @@ app.MapPut("/usuarios/{id}", async (int id, UsuarioUpdateDto usuarioDto, IUsuari
     var usuarioAtualizado = await service.AtualizarAsync(id, usuarioDto, ct);
 
     if (usuarioAtualizado == null)
-        return Results.NotFound();
+        return Results.NotFound(new { message = $"Usuário com id {id} não foi encontrado." });
 
     return Results.Ok(usuarioAtualizado);
 });
@@ -71,7 +71,7 @@ app.MapDelete("/usuarios/{id:int}", async(int id, IUsuarioService service, Cance
 {
     var remover = await service.RemoverAsync(id, ct);
 
-    return remover ? Results.NoContent() : Results.NotFound();
+    return remover ? Results.NoContent() : Results.NotFound(new { message = $"Usuário com id {id} não foi encontrado." });
 });
 
 if (app.Environment.IsDevelopment())
