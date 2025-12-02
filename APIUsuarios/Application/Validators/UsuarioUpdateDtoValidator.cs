@@ -9,7 +9,9 @@ public class UsuarioUpdateDtoValidator : AbstractValidator<UsuarioUpdateDto>
         RuleFor(u => u.Nome)
             .NotEmpty()
             .MinimumLength(3)
-            .MaximumLength(100);
+            .WithMessage("O nome deve ter no mínimo 3 caracteres.")
+            .MaximumLength(100)
+            .WithMessage("O nome deve ter no máximo 100 caracteres.");
 
         RuleFor(u => u.Email)
             .NotEmpty()

@@ -85,7 +85,7 @@ namespace Application.Services
             var usuario = await _repository.GetByIdAsync(id, ct);
 
             if(usuario is null)
-                return null;
+                throw new Exception($"Usuario com id {id} não foi encontrado!");
 
             usuario.Nome = dto.Nome;
             usuario.Email = email;
